@@ -1,32 +1,44 @@
-import knex from '../knex';
+// Base function for DB creation
 
 const baseAttrs = {
-  balanceInCents: 0, // create a balance transaction to change
-  name: 'LizLemon', // need sequences for unique?
-  password: 'password123',
+  name: 'Benny',
+  idealsHeOncePursued: null,
+  location: 'Alphabet City'
 };
 
 const traitAttrs = {
-  withEmail: {
-    email: 'lizlemon@ge.biz',
-  },
-};
-
-const userLego = (...options) => {
-  let attrs = {};
-
-  const firstOpt = options[0];
-
-  if (typeof firstOpt === 'undefined') {
-    attrs = baseAttrs;
-  } else if (typeof firstOpt === 'object' && firstOpt.constructor === Object) {
-    attrs = { ...baseAttrs, ...firstOpt };
-  } else if (typeof firstOpt === 'string' || firstOpt instanceof String) {
-    const overrides = options[1] || {};
-    attrs = { ...baseAttrs, ...traitAttrs[firstOpt], ...overrides };
+  someTrait: {
+    col: 'val'
   }
-
-  return knex('users').insert(attrs).returning('*').then(users => users[0]);
 };
 
-export default userLego;
+const lego = (knex, tableName, baseAttrs, traitAttrs) => {
+  /**
+   * Create a new lego
+   *
+   * @param {Knex} knex A knex instance
+   * @param {String} tableName Name of the table to insert records
+   * @param {Object} baseAttrs
+   * @param {Object} traitAttrs
+   *
+   * @return {Function} A function that accepts between 1 and 3 args and inserts row
+   */
+  return (...options) => {
+    let attrs = {};
+
+    const firstOpt = options[0];
+
+    if (typeof firstOpt === 'undefined') {
+      attrs = baseAttrs;
+    } else if (typeof firstOpt === 'object' && firstOpt.constructor === Object) {
+      attrs = { ...baseAttrs, ...firstOpt };
+    } else if (typeof firstOpt === 'string' || firstOpt instanceof String) {
+      const overrides = options[1] || {};
+      attrs = { ...baseAttrs, ...traitAttrs[firstOpt], ...overrides };
+    }
+
+    return knex(tableName).insert(attrs).returning('*').then(rows => rows[0]);
+  }
+};
+
+export default lego;
